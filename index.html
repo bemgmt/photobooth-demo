@@ -4,38 +4,204 @@
   <meta charset="UTF-8">
   <title>Photobooth Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f8fa;
+      color: #212121;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+    video, canvas {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      background: #000;
+    }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 25px;
+      background: #00c853;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    .overlay-thumb {
+      height: 60px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+    }
+    .countdown {
+      font-size: 3rem;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #6200ea;
+      display: none;
+    }
+    .overlay-slider {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Paywall Modal -->
-  <div id="paywall" class="overlay">
-    <div class="modal">
-      <h2>Unlock the Photobooth</h2>
-      <p>Tap to pay or simulate purchase to continue</p>
-      <button onclick="unlockBooth()">Simulate Payment</button>
-    </div>
+
+<!-- Paywall -->
+<div id="paywall" class="overlay">
+  <div class="modal">
+    <h2>Unlock the Booth</h2>
+    <p>Tap to simulate payment and begin</p>
+    <button class="btn" onclick="unlockBooth()">💳 Simulate Payment</button>
   </div>
+</div>
 
-  <!-- Main Booth Interface -->
-  <div id="booth" style="display:none;">
-    <h1>📸 Photobooth Test</h1>
-    <p id="lightPrompt">Please ensure you're in a well-lit area for best results.</p>
-    <video id="video" autoplay playsinline></video>
+<!-- Main Photobooth Card -->
+<div class="card" id="booth" style="display: none;">
+  <h1>📸 Photobooth Test</h1>
+  <p>💡 Make sure you're in good lighting</p>
 
-    <div id="countdown" style="font-size: 2em; display: none; margin: 10px;"></div>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display: none;"></canvas>
 
-    <button id="captureBtn" onclick="startCountdown()">Take Photo</button>
-    <canvas id="canvas" style="display:none;"></canvas>
+  <div id="countdown" class="countdown">3</div>
 
-    <label style="display:block; margin: 10px 0;">
+  <button id="captureBtn" class="btn" onclick="startCountdown()">📷 Take Photo</button>
+
+  <!-- Dropdown-style section -->
+  <div id="options" style="margin-top: 15px; text-align: left;">
+    <h3>🖼️ Select Overlay</h3>
+    <div class="overlay-slider">
+      <img src="https://i.imgur.com/yk9x0uF.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
+      <img src="https://i.imgur.com/GwCqLxJ.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
+      <img src="https://i.imgur.com/Q9LRNqD.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
+    </div>
+
+    <h3>🎭 Digital Props (coming soon)</h3>
+    <p style="font-size: 0.9rem; color: #888;">Drag and place stickers after photo is taken.</p>
+
+    <label style="display: block; margin-top: 10px;">
       <input type="checkbox" id="consent"> I agree to have my photo shared
     </label>
-
-    <a id="download" style="display:none;" download="photo.png">Download Photo</a>
-    <button id="resetBtn" style="display:none;" onclick="resetSession()">Start Over</button>
   </div>
 
-  <script src="script.js"></script>
+  <!-- After photo options -->
+  <div id="after-capture" style="display: none;">
+    <a id="download" download="photo.png" class="btn">⬇️ Download</a>
+    <button class="btn" onclick="resetSession()">🔁 Start Over</button>
+  </div>
+</div>
+
+<script>
+  let videoStream;
+  let selectedOverlay = 'https://i.imgur.com/yk9x0uF.png';
+
+  function unlockBooth() {
+    document.getElementById('paywall').style.display = 'none';
+    document.getElementById('booth').style.display = 'block';
+
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+    }).then(stream => {
+      videoStream = stream;
+      document.getElementById('video').srcObject = stream;
+    }).catch(err => {
+      alert('Camera access denied or not supported.');
+      console.error(err);
+    });
+  }
+
+  function startCountdown() {
+    const countdown = document.getElementById('countdown');
+    let counter = 3;
+    countdown.innerText = counter;
+    countdown.style.display = 'block';
+
+    const interval = setInterval(() => {
+      counter--;
+      if (counter === 0) {
+        clearInterval(interval);
+        countdown.style.display = 'none';
+        takePhoto();
+      } else {
+        countdown.innerText = counter;
+      }
+    }, 1000);
+  }
+
+  function takePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+
+    const overlay = new Image();
+    overlay.src = selectedOverlay;
+    overlay.onload = () => {
+      context.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'block';
+      document.getElementById('download').href = canvas.toDataURL('image/png');
+      document.getElementById('after-capture').style.display = 'block';
+    };
+  }
+
+  function resetSession() {
+    document.getElementById('canvas').style.display = 'none';
+    document.getElementById('after-capture').style.display = 'none';
+    document.getElementById('consent').checked = false;
+  }
+
+  function selectOverlay(src) {
+    selectedOverlay = src;
+    alert('Overlay selected!');
+  }
+
+  window.addEventListener("beforeunload", () => {
+    if (videoStream) {
+      videoStream.getTracks().forEach(track => track.stop());
+    }
+  });
+</script>
+
 </body>
 </html>
-

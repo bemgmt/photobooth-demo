@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Paywall Modal -->
   <div id="paywall" class="overlay">
     <div class="modal">
       <h2>Unlock the Photobooth</h2>
@@ -16,16 +16,26 @@
     </div>
   </div>
 
+  <!-- Main Booth Interface -->
   <div id="booth" style="display:none;">
     <h1>📸 Photobooth Test</h1>
-    <p>Please ensure you're in a well-lit area.</p>
+    <p id="lightPrompt">Please ensure you're in a well-lit area for best results.</p>
     <video id="video" autoplay playsinline></video>
-    <button onclick="takePhoto()">Take Photo</button>
+
+    <div id="countdown" style="font-size: 2em; display: none; margin: 10px;"></div>
+
+    <button id="captureBtn" onclick="startCountdown()">Take Photo</button>
     <canvas id="canvas" style="display:none;"></canvas>
-    <label><input type="checkbox" id="consent"> I agree to have my photo shared</label>
+
+    <label style="display:block; margin: 10px 0;">
+      <input type="checkbox" id="consent"> I agree to have my photo shared
+    </label>
+
     <a id="download" style="display:none;" download="photo.png">Download Photo</a>
+    <button id="resetBtn" style="display:none;" onclick="resetSession()">Start Over</button>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+

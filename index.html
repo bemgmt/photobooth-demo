@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photobooth Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="paywall" class="overlay">
+    <div class="modal">
+      <h2>Unlock the Photobooth</h2>
+      <p>Tap to pay or simulate purchase to continue</p>
+      <button onclick="unlockBooth()">Simulate Payment</button>
+    </div>
+  </div>
+
+  <div id="booth" style="display:none;">
+    <h1>📸 Photobooth Test</h1>
+    <p>Please ensure you're in a well-lit area.</p>
+    <video id="video" autoplay playsinline></video>
+    <button onclick="takePhoto()">Take Photo</button>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <label><input type="checkbox" id="consent"> I agree to have my photo shared</label>
+    <a id="download" style="display:none;" download="photo.png">Download Photo</a>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

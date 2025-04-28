@@ -2,80 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Photobooth Test</title>
+  <title>Photobooth Test – Speakeasy Style</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* Base Theme */
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f7f8fa;
-      color: #212121;
+      background: #121212 url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      font-family: 'Cinzel', serif;
+      color: #d4af37;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px #000;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      text-shadow: 1px 1px 3px #000;
     }
     .card {
-      background: white;
+      background: rgba(18, 18, 18, 0.8);
+      border: 1px solid #d4af37;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       padding: 20px;
       width: 100%;
       max-width: 400px;
       text-align: center;
-      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
     }
     video, canvas {
       width: 100%;
       border-radius: 16px;
-      margin-bottom: 10px;
       background: #000;
+      margin-bottom: 15px;
     }
     .btn {
+      background: #d4af37;
+      color: #121212;
       padding: 12px 20px;
       border: none;
-      border-radius: 25px;
-      background: #00c853;
-      color: white;
+      border-radius: 30px;
       font-size: 1rem;
       cursor: pointer;
-      margin: 10px 5px;
+      margin: 10px 0;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #f5d481;
     }
     .overlay-thumb {
       height: 60px;
       border-radius: 10px;
+      border: 2px solid #d4af37;
       cursor: pointer;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
-    .overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .modal {
-      background: white;
-      padding: 2rem;
-      border-radius: 20px;
-      text-align: center;
-      width: 90%;
-      max-width: 320px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      margin-right: 8px;
     }
     .countdown {
       font-size: 3rem;
       font-weight: bold;
-      margin: 10px 0;
-      color: #6200ea;
+      color: #f5d481;
+      margin: 15px 0;
       display: none;
     }
     .overlay-slider {
       display: flex;
       overflow-x: auto;
       gap: 10px;
-      margin-bottom: 10px;
+      margin: 15px 0;
+    }
+    label {
+      font-size: 0.9rem;
+      color: #f5d481;
+      display: block;
+      margin-top: 10px;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: #777;
+      text-align: center;
+    }
+    /* Paywall modal */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal {
+      background: #1e1e1e;
+      border: 2px solid #d4af37;
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
   </style>
 </head>
@@ -92,39 +127,39 @@
 
 <!-- Main Photobooth Card -->
 <div class="card" id="booth" style="display: none;">
-  <h1>📸 Photobooth Test</h1>
-  <p>💡 Make sure you're in good lighting</p>
+  <h1>La Descarga Photobooth</h1>
+  <p>📸 Step into the secret lounge & take your memory home</p>
 
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" style="display: none;"></canvas>
 
   <div id="countdown" class="countdown">3</div>
 
-  <button id="captureBtn" class="btn" onclick="startCountdown()">📷 Take Photo</button>
+  <!-- Take Photo links to a NEW page -->
+  <a href="take-photo.html" class="btn">📷 Take a Photo</a>
 
-  <!-- Dropdown-style section -->
-  <div id="options" style="margin-top: 15px; text-align: left;">
-    <h3>🖼️ Select Overlay</h3>
+  <!-- Overlay Options -->
+  <div id="options">
+    <h3 style="margin-top:20px;">🖼️ Choose Your Overlay</h3>
     <div class="overlay-slider">
       <img src="https://i.imgur.com/yk9x0uF.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
       <img src="https://i.imgur.com/GwCqLxJ.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
       <img src="https://i.imgur.com/Q9LRNqD.png" class="overlay-thumb" onclick="selectOverlay(this.src)">
     </div>
 
-    <h3>🎭 Digital Props (coming soon)</h3>
-    <p style="font-size: 0.9rem; color: #888;">Drag and place stickers after photo is taken.</p>
-
-    <label style="display: block; margin-top: 10px;">
-      <input type="checkbox" id="consent"> I agree to have my photo shared
-    </label>
+    <label><input type="checkbox" id="consent"> I agree to have my photo shared on social media</label>
   </div>
 
-  <!-- After photo options -->
+  <!-- Download / Reset after capture (hidden until used) -->
   <div id="after-capture" style="display: none;">
     <a id="download" download="photo.png" class="btn">⬇️ Download</a>
     <button class="btn" onclick="resetSession()">🔁 Start Over</button>
   </div>
 </div>
+
+<footer>
+  Powered by Bird’s Eye Management
+</footer>
 
 <script>
   let videoStream;
@@ -149,51 +184,15 @@
     });
   }
 
-  function startCountdown() {
-    const countdown = document.getElementById('countdown');
-    let counter = 3;
-    countdown.innerText = counter;
-    countdown.style.display = 'block';
-
-    const interval = setInterval(() => {
-      counter--;
-      if (counter === 0) {
-        clearInterval(interval);
-        countdown.style.display = 'none';
-        takePhoto();
-      } else {
-        countdown.innerText = counter;
-      }
-    }, 1000);
-  }
-
-  function takePhoto() {
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-
-    const overlay = new Image();
-    overlay.src = selectedOverlay;
-    overlay.onload = () => {
-      context.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-      canvas.style.display = 'block';
-      document.getElementById('download').href = canvas.toDataURL('image/png');
-      document.getElementById('after-capture').style.display = 'block';
-    };
+  function selectOverlay(src) {
+    selectedOverlay = src;
+    alert('Overlay selected!');
   }
 
   function resetSession() {
     document.getElementById('canvas').style.display = 'none';
     document.getElementById('after-capture').style.display = 'none';
     document.getElementById('consent').checked = false;
-  }
-
-  function selectOverlay(src) {
-    selectedOverlay = src;
-    alert('Overlay selected!');
   }
 
   window.addEventListener("beforeunload", () => {

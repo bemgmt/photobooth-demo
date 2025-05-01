@@ -25,10 +25,25 @@
       box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
       overflow: hidden;
     }
+    #preview-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
     video {
+      position: absolute;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 20px;
+    }
+    #overlayImg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
       border-radius: 20px;
     }
     .btn {
@@ -84,7 +99,10 @@
 <body>
 
 <div id="mirror">
-  <video id="video" autoplay playsinline></video>
+  <div id="preview-wrapper">
+    <video id="video" autoplay playsinline></video>
+    <img id="overlayImg" src="">
+  </div>
 </div>
 
 <div id="flash"></div>
@@ -96,6 +114,18 @@
 
 <script>
   let videoStream;
+  let selectedOverlay = '';
+
+  // Read overlay from URL
+  function getOverlayFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('overlay') || '';
+  }
+
+  selectedOverlay = getOverlayFromURL();
+  if (selectedOverlay) {
+    document.getElementById('overlayImg').src = selectedOverlay;
+  }
 
   navigator.mediaDevices.getUserMedia({
     video: {
@@ -145,9 +175,31 @@
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const link = document.getElementById('downloadLink');
-    link.href = canvas.toDataURL('image/png');
-    link.style.display = 'block';
+    if (selectedOverlay) {
+      const overlay = new Image();
+      overlay.src = selectedOverlay;
+      overlay.onload = () => {
+        ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+        finalizePhoto(canvas);
+      };
+    } else {
+      finalizePhoto(canvas);
+    }
+  }
+
+  function finalizePhoto(canvas) {
+    const imageURL = canvas.toDataURL('image/png');
+    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isiOS) {
+      const newTab = window.open();
+      newTab.document.write(`<img src="${imageURL}" style="width:100%">`);
+      alert("📲 Tap and hold the image to save it to your Photos.");
+    } else {
+      const link = document.getElementById('downloadLink');
+      link.href = imageURL;
+      link.style.display = 'block';
+    }
   }
 
   window.addEventListener("beforeunload", () => {

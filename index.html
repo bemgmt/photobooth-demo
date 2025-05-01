@@ -136,7 +136,7 @@
   <div id="countdown" class="countdown">3</div>
 
   <!-- Take Photo links to a NEW page -->
-  <a href="take-photo.html" class="btn">📷 Take a Photo</a>
+  <a id="takePhotoBtn" class="btn">📷 Take a Photo</a>
 
   <!-- Overlay Options -->
   <div id="options">
@@ -163,7 +163,7 @@
 
 <script>
   let videoStream;
-  let selectedOverlay = 'https://i.imgur.com/yk9x0uF.png';
+  let selectedOverlay = '';
 
   function unlockBooth() {
     document.getElementById('paywall').style.display = 'none';
@@ -194,6 +194,21 @@
     document.getElementById('after-capture').style.display = 'none';
     document.getElementById('consent').checked = false;
   }
+
+  function goToBooth() {
+    if (!selectedOverlay) {
+      alert("Please select an overlay first!");
+      return;
+    }
+    const encodedOverlay = encodeURIComponent(selectedOverlay);
+    window.location.href = `take-photo.html?overlay=${encodedOverlay}`;
+  }
+
+  // Update Take Photo button behavior
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById('takePhotoBtn');
+    btn.addEventListener('click', goToBooth);
+  });
 
   window.addEventListener("beforeunload", () => {
     if (videoStream) {
